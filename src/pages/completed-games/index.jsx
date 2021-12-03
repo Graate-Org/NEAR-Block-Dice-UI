@@ -10,7 +10,7 @@ const CompletedGames = ({ contract, currentUser }) => {
   useEffect(() => {
     const getCompletedGames = async () => {
       try {
-        const pages = await contract.getCompletedGames({});
+        const pages = await contract.getCompletedGames({ page: 0 });
         return pages;
       } catch (err) {
         alert("Caught an error: " + err.message);
