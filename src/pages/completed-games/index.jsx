@@ -13,7 +13,7 @@ const CompletedGames = ({ contract, currentUser }) => {
         const pages = await contract.getCompletedGames({ page: 0 });
         return pages;
       } catch (err) {
-        alert("Caught an error: " + err.message);
+       return "Caught an error: " + err.message;
       }
     };
 
