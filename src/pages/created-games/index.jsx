@@ -1,55 +1,74 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import GameCard from "../../components/GameCard/GameCard";
-import Navigator from "../../components/Navigator/Navigator";
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import GameCard from '../../components/GameCard/GameCard'
+import DualRingLoader from '../../components/Icon/DualRingLoader'
+import Navigator from '../../components/Navigator/Navigator'
+import parseNanoSecToMs from '../../utils/parseDateToMs'
+import { LoaderWrapper } from '../completed-games'
 
 const CreatedGames = ({ contract, currentUser }) => {
-	const [createdGames, setCreatedGames] = useState(null);
+  const [createdGames, setCreatedGames] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   async function getCreatedGames() {
     try {
-      const pages = await contract?.getCreatedGames({ page: 0 });
-      return pages;
+      const pages = await contract?.getCreatedGames({ page: 0 })
+      return pages
     } catch (error) {
-      return error.message;
+      return error.message
     }
   }
 
+  const assignCreatedGames = () => {
+    getCreatedGames()
+      .then((res) => setCreatedGames(res?.data))
+      .finally(() => setLoading(false))
+  }
+
   useEffect(() => {
-    getCreatedGames().then((res) => setCreatedGames(res?.data));
+    setLoading(true)
+    assignCreatedGames()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   return (
     <Wrapper>
       <header>Created Games</header>
-      <main className="my-20 mx-auto grid grid-cols-2 gap-10">
-        {createdGames?.map((el) => {
-          if(el.status === 0) {
+      {loading ? (
+        <LoaderWrapper className="my-20">
+          <DualRingLoader width={100} height={100} />
+        </LoaderWrapper>
+      ) : (
+        <main className="my-20 mx-auto grid grid-cols-3 gap-10">
+          {createdGames?.map((el) => {
+            console.log(el)
+            // if (el.status === 0) {
             return (
               <GameCard
                 key={el.id}
                 id={el.id}
+                createdAt={
+                  el.createdAt > 0 && new Date(parseNanoSecToMs(el.createdAt))
+                }
                 creator={el.createdBy}
-                startDate={`${new Date(el.createdAt / 1000000)}`.substring(0, 24)}
-                endDate={`${new Date((el.createdAt / 1000000) + (1800000))}`.substring(0, 24)}
+                startDate={
+                  el.started > 0 && new Date(parseNanoSecToMs(el.started))
+                }
+                endDate={el.ended > 0 && new Date(parseNanoSecToMs(el.ended))}
                 players={el.players}
                 contract={contract}
                 currentUser={currentUser}
-                createdAt = {el.createdAt}
                 status={el.status}
-
               />
             )
-          }
-
-          return null;
-        })}
-      </main>
+            // }
+          })}
+        </main>
+      )}
       <Navigator pageNum={1} next prev={false} />
     </Wrapper>
-  );
-};
+  )
+}
 
 const Wrapper = styled.div`
   & > header {
@@ -79,6 +98,6 @@ const Wrapper = styled.div`
     padding: 5rem 10rem 6rem;
     background: #e2e6e9;
   }
-`;
+`
 
-export default CreatedGames;
+export default CreatedGames

@@ -1,200 +1,83 @@
-import Big from "big.js";
-import { useEffect, useState } from "react";
-import styled from "styled-components";
-import Button from "../Button/Button";
-import Icon from "../Icon/Icon";
-import Timer from "../Timer/Timer";
-
-const txFee = Big(0.5)
-  .times(10 ** 24)
-  .toFixed();
-const GAS = Big(3)
-  .times(10 ** 13)
-  .toFixed();
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import dateFormatter from '../../utils/dateFormatter'
+import Timer from '../Timer/Timer'
 
 const GameCard = ({
   creator,
   startDate,
   endDate,
   players,
-  variant,
-  amount,
-  contract,
-  currentUser,
   id,
   createdAt,
   status,
 }) => {
-  const [rolled, setRolled] = useState("Join Game");
-  const [counter, setCounter] = useState(30.0);
-  const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTIme] = useState(0);
-  const [result, setResult] = useState("");
+  const [counter, setCounter] = useState('00:00')
 
   useEffect(() => {
-    const getGameDetails = async () => {
-      const playersDetails = await contract?.getPlayersDetails({ gameId: id });
-      let winners = [];
-
-      if (status === 2) {
-        winners = await contract?.getWinners({ gameId: id });
-      }
-
-      for (let el of playersDetails) {
-        if (el.playerId === currentUser?.accountId) {
-          if (el.timeRolled !== "0") {
-            setRolled("Rolled");
-            if (status === 2) {
-              if (winners[0] === currentUser?.accountId) {
-                setRolled("ClaimWin");
-                setResult("won");
-                if (el.claimedWin === 1) {
-                  setResult("claimed");
-                  setRolled("claimed");
-                }
-              } else {
-                setRolled("lost");
-                setResult("lost");
-              }
-            }
-          } else {
-            setRolled("Roll");
-          }
-
-          break;
+    if (endDate) {
+      const sTime = new Date(endDate)
+      const eTime = new Date()
+      const countdownTime = sTime.getTime() - eTime.getTime()
+      const minutes = Math.floor(
+        (countdownTime % (1000 * 60 * 60)) / (1000 * 60),
+      )
+      const seconds = Math.floor((countdownTime % (1000 * 60)) / 1000)
+      var intervalVar = setInterval(() => {
+        if (countdownTime > 0) {
+          setCounter(
+            `${minutes < 10 ? '0' + minutes : minutes}:${
+              seconds < 10 ? '0' + seconds : seconds
+            }`,
+          )
         } else {
-          setRolled("Join Game");
+          setCounter('00:00')
         }
-      }
-    };
-
-    getGameDetails();
-  }, [contract, id, currentUser?.accountId, status]);
-
-  useEffect(() => {
-    let time = new Date(createdAt / 1000000);
-    setStartTime(time.getTime() / 1000);
-    setEndTIme(startTime + 1800);
-
-    setInterval(() => {
-      if (Date.now() / 1000 >= endTime || counter === "00.00") {
-        setCounter("00:00");
-      } else if (Date.now() / 1000 !== endTime) {
-        const currentTime = endTime - Date.now() / 1000;
-        setCounter(currentTime && currentTime / 60 - 0.01);
-      }
-    }, 1000);
-  }, [status, createdAt, startTime, counter, endTime]);
-
-  const handleClick = async () => {
-    setRolled("Loading...");
-
-    const countDown = () => {
-      setInterval(() => {
-        if (Date.now() / 1000 >= endTime || counter === "00.00") {
-          setCounter("00:00");
-        } else if (Date.now() / 1000 !== endTime) {
-          const currentTime = endTime - Date.now() / 1000;
-          setCounter(currentTime / 60 - 0.01);
-        }
-      }, 1000);
-    };
-
-    if (status !== 2) {
-      const playersDetails = await contract.getPlayersDetails({ gameId: id });
-      try {
-        if (
-          playersDetails[0]?.playerId === currentUser?.accountId ||
-          playersDetails[1]?.playerId === currentUser?.accountId
-        ) {
-          setRolled("Rolling...");
-          const res = await contract.rollDice({ gameId: id });
-          res && setRolled("Rolled");
-          res && countDown();
-        } else {
-          setRolled("Joining...");
-          const res = await contract.joinGame({ gameId: id }, GAS, txFee);
-          res && setRolled("Roll");
-          countDown();
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
+      }, 1000)
     }
 
-    if (status === 2) {
-      try {
-        setRolled("Claiming...");
-        const res = await contract?.claimWinnings({ gameId: id });
-        res && window.location.reload(true);
-      } catch (error) {
-        alert("Error occurred: Report out to support@graate.com");
-      }
-    }
-  };
-
-  const renderedButton = () => {
-    if (variant === "completed") {
-      return (
-        <Button
-          disabled={result !== "won"}
-          variant={
-            result === "lost" ? "red" : result === "won" ? "mint" : "disabled"
-          }
-          onClick={handleClick}
-        >
-          {result === "lost"
-            ? "Lost"
-            : result === "won"
-            ? "Claim Win"
-            : "Claimed"}
-        </Button>
-      );
-    }
-
-    return (
-      <Button
-        disabled={rolled === "Rolled" ? true : false}
-        variant={rolled === "Rolled" ? "disabled" : "mint"}
-        onClick={handleClick}
-      >
-        {rolled}
-      </Button>
-    );
-  };
+    return () => clearInterval(intervalVar)
+  })
 
   return (
-    <Wrapper className="flex items-end justify-between px-8 py-6">
+    <Wrapper className=" px-8 py-6">
       <div>
-        <h3 className="text-lg font-medium">Creator: {creator}</h3>
-        <h3 className="text-lg font-medium my-3">Started At: {startDate}</h3>
-        <h3 className="text-lg font-medium">Ends At: {endDate}</h3>
-        <h3 className="text-lg font-medium mt-3 mb-6">Players: {players}</h3>
-        {renderedButton()}
-      </div>
-      {variant !== "completed" ? (
-        <Timer
-          time={`${
-            counter < 0 || counter === "00:00" ? "00:00" : counter?.toFixed(2)
-          }`}
-        />
-      ) : (
-        <div className="bd-amount rounded-full">
-          <span className="inner-circle flex items-center justify-center rounded-full">
-            {amount && (
-              <>
-                <Icon icon="near" /> <p className="font-bold ml-1">{amount}</p>
-              </>
-            )}
-          </span>
+        {status === 1 && (
+          <div className="mb-10 flex justify-center">
+            <Timer time={counter} />
+          </div>
+        )}
+        <div>
+          <h3 className="text-lg font-medium">Creator: {creator}</h3>
+          {createdAt && (
+            <h3 className="text-lg font-medium my-3">
+              Created At: {dateFormatter(createdAt)}
+            </h3>
+          )}
+
+          {startDate && (
+            <h3 className="text-lg font-medium my-3">
+              Started At: {dateFormatter(startDate)}
+            </h3>
+          )}
+          {endDate && (
+            <h3 className="text-lg font-medium">
+              Ends At: {dateFormatter(endDate)}
+            </h3>
+          )}
+          <h3 className="text-lg font-medium mt-3 mb-6">Players: {players}</h3>
         </div>
-      )}
+      </div>
+      <div>
+        <Navigate to={`/game/${id}`}> View</Navigate>
+      </div>
     </Wrapper>
-  );
-};
+  )
+}
 
 const Wrapper = styled.div`
-  height: 306px;
+  min-height: 200px;
   width: 100%;
   max-width: 750px;
   background: linear-gradient(138.85deg, #ffffff -38.72%, #ffffff 153.95%);
@@ -212,6 +95,12 @@ const Wrapper = styled.div`
       margin: 3px 0 0 4px;
     }
   }
-`;
+`
 
-export default GameCard;
+const Navigate = styled(Link)`
+  text-decoration: underline;
+  text-align: center;
+  display: block;
+`
+
+export default GameCard

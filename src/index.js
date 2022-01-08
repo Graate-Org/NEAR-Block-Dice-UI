@@ -30,48 +30,24 @@ async function initContract() {
   }
 
   // Initializing our contract APIs by contract name and configuration
-  const contract = await new nearAPI.Contract(
-    walletConnection.account(),
-    nearConfig.contractName,
-    {
-      // View methods are read-only – they don't modify the state, but usually return some value
-      viewMethods: [
-        "getWinners",
-        "getGameDetails",
-        "getPlayersDetails",
-        "getProfileDetails",
-        "getActiveGames",
-        "getCreatedGames",
-      ],
-      // Change methods can modify the state, but you don't receive the returned value when called
-      changeMethods: [
-        "createNewGame",
-        "joinGame",
-        "rollDice",
-        "claimWinnings",
-        "getCompletedGames",
-      ],
-      // Sender is the account ID to initialize transactions.
-      // getAccountId() will return empty string if user is still unauthorized
-      sender: walletConnection.getAccountId(),
-    }
-  );
+  const contract = await new nearAPI.Contract(walletConnection.account(), nearConfig.contractName, {
+    // View methods are read-only – they don't modify the state, but usually return some value
+    viewMethods: ["getWinners", "getGameDetails", "getPlayersDetails", "getProfileDetails", "getActiveGames", "getCreatedGames", "getCompletedGames"],
+    // Change methods can modify the state, but you don't receive the returned value when called
+    changeMethods: ["createNewGame", "joinGame", "rollDice", "claimWinnings"],
+    // Sender is the account ID to initialize transactions.
+    // getAccountId() will return empty string if user is still unauthorized
+    sender: walletConnection.getAccountId(),
+  });
 
   return { contract, currentUser, nearConfig, walletConnection };
 }
 
-window.nearInitPromise = initContract().then(
-  ({ contract, currentUser, nearConfig, walletConnection }) => {
-    ReactDOM.render(
-      <React.StrictMode>
-        <App
-          contract={contract}
-          currentUser={currentUser}
-          nearConfig={nearConfig}
-          wallet={walletConnection}
-        />
-      </React.StrictMode>,
-      document.getElementById("root")
-    );
-  }
-);
+window.nearInitPromise = initContract().then(({ contract, currentUser, nearConfig, walletConnection }) => {
+  ReactDOM.render(
+    <React.StrictMode>
+      <App contract={contract} currentUser={currentUser} nearConfig={nearConfig} wallet={walletConnection} />
+    </React.StrictMode>,
+    document.getElementById("root")
+  );
+});

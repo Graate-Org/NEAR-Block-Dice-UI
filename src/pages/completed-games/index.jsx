@@ -1,56 +1,78 @@
-import { useEffect } from "react";
-import { useState } from "react";
-import styled from "styled-components";
-import GameCard from "../../components/GameCard/GameCard";
-import Navigator from "../../components/Navigator/Navigator";
+import { useEffect } from 'react'
+import { useState } from 'react'
+import styled from 'styled-components'
+import GameCard from '../../components/GameCard/GameCard'
+import DualRingLoader from '../../components/Icon/DualRingLoader'
+import Navigator from '../../components/Navigator/Navigator'
+import parseNanoSecToMs from '../../utils/parseDateToMs'
+
+export const LoaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
 
 const CompletedGames = ({ contract, currentUser }) => {
-  const [completedGames, setCompletedGames] = useState([]);
+  const [completedGames, setCompletedGames] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     const getCompletedGames = async () => {
       try {
-        const pages = await contract.getCompletedGames({ page: 0 });
-        return pages;
+        const pages = await contract.getCompletedGames({ page: 0 })
+        return pages
       } catch (err) {
-       return "Caught an error: " + err.message;
+        return 'Caught an error: ' + err.message
       }
-    };
+    }
 
-    getCompletedGames().then((res) => setCompletedGames(res?.data));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getCompletedGames()
+      .then((res) => setCompletedGames(res?.data))
+      .finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Wrapper>
       <header>Completed Games</header>
-      <main className="my-20 mx-auto grid grid-cols-2 gap-10">
-        {completedGames?.map((el) => {
-          if(el.status === 2) {
-            return (
-              <GameCard
-                key={el.id}
-                id={el.id}
-                creator={el.createdBy}
-                startDate={`${new Date(el.createdAt / 1000000)}`.substring(0, 24)}
-                endDate={`${new Date((el.createdAt / 1000000) + (1800000))}`.substring(0, 24)}
-                players={el.players}
-                contract={contract}
-                currentUser={currentUser}
-								status={el.status}
-								createdAt = {el.createdAt}
-                variant = "completed"
-              />
-            )
-          }
+      {loading ? (
+        <LoaderWrapper className="my-20">
+          <DualRingLoader width={100} height={100} />
+        </LoaderWrapper>
+      ) : (
+        <main className="my-20 mx-auto grid grid-cols-3 gap-10">
+          {completedGames?.map((el) => {
+            if (el.status === 2) {
+              return (
+                <GameCard
+                  key={el.id}
+                  id={el.id}
+                  creator={el.createdBy}
+                  startDate={
+                    el.started > 0 && new Date(parseNanoSecToMs(el.started))
+                  }
+                  endDate={el.ended > 0 && new Date(parseNanoSecToMs(el.ended))}
+                  players={el.players}
+                  contract={contract}
+                  currentUser={currentUser}
+                  status={el.status}
+                  createdAt={
+                    el.createdAt > 0 && new Date(parseNanoSecToMs(el.createdAt))
+                  }
+                  variant="completed"
+                />
+              )
+            }
 
-          return null;
-        })}
-				</main>
+            return null
+          })}
+        </main>
+      )}
       <Navigator pageNum={1} next={false} prev={false} />
     </Wrapper>
-  );
-};
+  )
+}
 
 const Wrapper = styled.div`
   & > header {
@@ -83,6 +105,6 @@ const Wrapper = styled.div`
     padding: 5rem 10rem 6rem;
     background: #e2e6e9;
   }
-`;
+`
 
-export default CompletedGames;
+export default CompletedGames
