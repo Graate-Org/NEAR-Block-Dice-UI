@@ -9,8 +9,8 @@ const Timer = ({ time }) => {
 };
 
 const Wrapper = styled.div`
-	width: 130px;
-	height: 130px;
+	width: 90px;
+	height: 90px;
 	background: #f5f5f5;
   border: 4px solid #FFD1C2;
 `;

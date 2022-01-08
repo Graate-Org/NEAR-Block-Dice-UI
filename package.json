@@ -8,6 +8,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "big.js": "^6.1.1",
+    "hexy": "^0.3.4",
     "identicon": "^3.0.1",
     "near-api-js": "^0.43.1",
     "react": "^17.0.2",

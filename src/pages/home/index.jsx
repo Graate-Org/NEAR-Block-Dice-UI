@@ -1,36 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import styled from "styled-components";
-import Button from "../../components/Button/Button";
-import Icon from "../../components/Icon/Icon";
-import Input from "../../components/Input/Input";
-import Big from "big.js";
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import styled from 'styled-components'
+import Button from '../../components/Button/Button'
+import Icon from '../../components/Icon/Icon'
+import Input from '../../components/Input/Input'
+import Big from 'big.js'
+import { useHistory } from 'react-router-dom'
+import { decodeArgs, txReturnArgsFromHash } from '../../utils/near'
+import useQuery from '../../hooks/useQuery'
+import GameIdModal from '../../components/Modal/gameId'
 
 const txFee = Big(0.5)
   .times(10 ** 24)
-  .toFixed();
+  .toFixed()
 const GAS = Big(3)
   .times(10 ** 13)
-  .toFixed();
+  .toFixed()
 
 const Home = ({ contract, currentUser }) => {
-  const [gameId, setGameId] = useState("");
-	const [homeBtn, setHomeBtn] = useState("Create A Game")
-  const [joinBtn, setJoinBtn] = useState("Join Game")
+  const [gameId, setGameId] = useState('')
+  const [homeBtn, setHomeBtn] = useState('Create A Game')
+  const [created, setCreated] = useState('')
+  const [modal, setModal] = useState(false)
+  const query = useQuery()
+  const hash = query.get('transactionHashes')
+  const history = useHistory()
 
   const createNewGame = async () => {
     try {
-      return await contract.createNewGame({}, GAS, txFee);
+      await contract.createNewGame({}, GAS, txFee)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    setJoinBtn("Loading...")
-    await contract.joinGame({ gameId: gameId }, GAS, txFee);
-    e.preventDefault();
-    setJoinBtn("Join Game")
+    history.push('/game/' + gameId)
+  }
+
+  useEffect(() => {
+    if (hash) {
+      txReturnArgsFromHash({ hash, accountId: currentUser.accountId }).then(
+        (res) => {
+          handleShowGameId(decodeArgs(res))
+        },
+      )
+    }
+  }, [])
+
+  const handleShowGameId = (arg) => {
+    setCreated(arg)
+    setModal(true)
   }
 
   return (
@@ -44,11 +64,10 @@ const Home = ({ contract, currentUser }) => {
             style={{ height: 55 }}
             className="my-8"
             onClick={() => {
-							setHomeBtn("Loading...");
-
+              setHomeBtn('Loading...')
               createNewGame().then((val) => {
-								setHomeBtn("Create A Game")
-              });
+                setHomeBtn('Create A Game')
+              })
             }}
           >
             {homeBtn}
@@ -134,7 +153,7 @@ const Home = ({ contract, currentUser }) => {
         </article>
         <article className="ml-32 w-1/2">
           <h2 className="text-3xl text-center font-bold mb-16">
-            Join Active Game
+            Enter A Game ID to Search
           </h2>
           <form className="w-full flex flex-col items-center">
             <Input
@@ -142,15 +161,24 @@ const Home = ({ contract, currentUser }) => {
               onChange={(e) => setGameId(e.target.value)}
               placeholder="Enter Game ID"
             />
-            <Button style={{ height: 55 }} className="mt-12 w-max" onClick={handleSubmit}>
-              {joinBtn}
+            <Button
+              style={{ height: 55 }}
+              className="mt-12 w-max"
+              onClick={handleSubmit}
+            >
+              Search Game
             </Button>
           </form>
         </article>
       </section>
+      <GameIdModal
+        id={created}
+        open={modal}
+        handleClose={() => setModal(false)}
+      />
     </Wrapper>
-  );
-};
+  )
+}
 
 const Wrapper = styled.div`
   & > .bd-intro {
@@ -167,6 +195,6 @@ const Wrapper = styled.div`
     padding: 5rem 10rem 6rem;
     background: #e2e6e9;
   }
-`;
+`
 
-export default Home;
+export default Home
