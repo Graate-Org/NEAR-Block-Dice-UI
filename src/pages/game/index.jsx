@@ -88,6 +88,7 @@ const CompletedGames = ({ contract, currentUser }) => {
         },
       )
     }
+    // eslint-disable-next-line
   }, [])
 
   useEffect(() => {
