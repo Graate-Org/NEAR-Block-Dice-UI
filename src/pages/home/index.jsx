@@ -46,6 +46,7 @@ const Home = ({ contract, currentUser }) => {
         },
       )
     }
+    // eslint-disable-next-line
   }, [])
 
   const handleShowGameId = (arg) => {

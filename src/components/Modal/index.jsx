@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { keyframes } from 'styled-components'
 import CloseCircle from '../Icon/CloseCircle'
