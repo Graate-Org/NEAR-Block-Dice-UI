@@ -39,7 +39,7 @@ const Home = ({ contract, currentUser }) => {
   }
 
   useEffect(() => {
-    if (hash) {
+    if (hash && currentUser) {
       txReturnArgsFromHash({ hash, accountId: currentUser.accountId }).then(
         (res) => {
           handleShowGameId(decodeArgs(res))
@@ -177,6 +177,10 @@ const Home = ({ contract, currentUser }) => {
         open={modal}
         handleClose={() => {
           query.delete('transactionHashes')
+          history.replace({
+            search: query.toString(),
+          })
+          
           setModal(false)
         }}
       />

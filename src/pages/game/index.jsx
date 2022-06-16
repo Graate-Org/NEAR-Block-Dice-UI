@@ -79,7 +79,7 @@ const CompletedGames = ({ contract, currentUser }) => {
   }
 
   useEffect(() => {
-    if (hash) {
+    if (hash && currentUser) {
       txReturnArgsFromHash({ hash, accountId: currentUser.accountId }).then(
         (res) => {
           console.log(decodeArgs(res))
@@ -318,6 +318,10 @@ const CompletedGames = ({ contract, currentUser }) => {
         open={rollModal && roll.length > 0}
         handleClose={() => {
           query.delete('transactionHashes')
+          history.replace({
+            search: query.toString(),
+          })
+          
           setRollModal(false)
         }}
       />
