@@ -47,11 +47,9 @@ const CompletedGames = ({ contract, currentUser }) => {
           if (userPl) {
             setRolled(userPl?.timeRolled > 0 ? 'Rolled' : 'Roll')
             setClaimStats(
-              (
-                resWinners?.contains(userPl?.playerId)
-                  ? 'won'
-                  : resWinners?.contains(userPl?.playerId) && userPl?.claimedWin
-              )
+              resWinners?.contains(userPl?.playerId)
+                ? 'won'
+                : resWinners?.contains(userPl?.playerId) && userPl?.claimedWin
                 ? 'claimed'
                 : 'lost',
             )
