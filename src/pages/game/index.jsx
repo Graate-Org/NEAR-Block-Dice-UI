@@ -46,15 +46,15 @@ const CompletedGames = ({ contract, currentUser }) => {
           console.log(resWinners)
           if (userPl) {
             setRolled(userPl?.timeRolled > 0 ? 'Rolled' : 'Roll')
-            // setClaimStats(
-            //   (
-            //     resWinners?.contains(userPl?.playerId)
-            //       ? 'won'
-            //       : resWinners?.contains(userPl?.playerId) && userPl?.claimedWin
-            //   )
-            //     ? 'claimed'
-            //     : 'lost',
-            // )
+            setClaimStats(
+              (
+                resWinners?.contains(userPl?.playerId)
+                  ? 'won'
+                  : resWinners?.contains(userPl?.playerId) && userPl?.claimedWin
+              )
+                ? 'claimed'
+                : 'lost',
+            )
           }
         } else {
           setRolled('Join')
@@ -321,7 +321,7 @@ const CompletedGames = ({ contract, currentUser }) => {
           history.replace({
             search: query.toString(),
           })
-          
+
           setRollModal(false)
         }}
       />
