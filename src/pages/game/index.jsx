@@ -317,8 +317,8 @@ const CompletedGames = ({ contract, currentUser }) => {
         dice2={roll[1]}
         open={rollModal && roll.length > 0}
         handleClose={() => {
+          query.delete('transactionHashes')
           setRollModal(false)
-          history.push(history.pathname)
         }}
       />
     </Wrapper>

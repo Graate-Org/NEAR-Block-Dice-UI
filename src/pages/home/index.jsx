@@ -175,7 +175,10 @@ const Home = ({ contract, currentUser }) => {
       <GameIdModal
         id={created}
         open={modal}
-        handleClose={() => setModal(false)}
+        handleClose={() => {
+          query.delete('transactionHashes')
+          setModal(false)
+        }}
       />
     </Wrapper>
   )
