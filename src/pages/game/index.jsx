@@ -34,9 +34,11 @@ const CompletedGames = ({ contract, currentUser }) => {
     setLoading(true)
     try {
       const [game] = await contract?.getGameDetails({ gameId: id })
+
+      console.log(game)
       const players = await contract?.getPlayersDetails({ gameId: id })
       const [userPl] = players.filter(
-        (val) => val.playerId === currentUser.accountId,
+        (val) => val.playerId === currentUser?.accountId,
       )
 
       if (game.status === 2) {
