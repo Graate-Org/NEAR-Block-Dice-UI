@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { useState } from 'react/cjs/react.development'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import GameCard from '../../components/GameCard/GameCard'
 import Navigator from '../../components/Navigator/Navigator'
